@@ -8,8 +8,9 @@ models:
       - name: repo_id
         data_tests:
           - relationships:
-              to: ref('dim_repo')
-              field: repo_id
+              arguments:
+                to: ref('dim_repo')
+                field: repo_id
               config:
                 where: "repo_id is not null"
   - name: dim_actor
