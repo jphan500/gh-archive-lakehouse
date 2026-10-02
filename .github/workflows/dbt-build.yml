@@ -27,6 +27,9 @@ jobs:
       - name: dbt build
         working-directory: dbt
         run: dbt build --profiles-dir ci
+      - name: dbt source freshness
+        working-directory: dbt
+        run: dbt source freshness --profiles-dir ci
       - name: dbt docs
         working-directory: dbt
         run: dbt docs generate --static --profiles-dir ci

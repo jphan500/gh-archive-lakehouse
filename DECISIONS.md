@@ -41,3 +41,41 @@ Short record of what I chose, what I rejected, and why.
 
 ## 7. Measured numbers
 - TODO: size of one hourly file, upload time per day, rows per day, bronze ingest runtime, total after backfill.
+
+cd ~/gh-archive-lakehouse
+cat >> DECISIONS.md << 'EOF'
+
+## 8. Silver design
+- Parse with try_parse_json (VARIANT) and try_ casts, so schema drift and bad rows can't crash the stream.
+- Dedupe with MERGE on event_id (window function inside a batch, MERGE across batches). Source data itself contains a small number of duplicate events (bronze minus silver was about 135 rows of 53M, re-verify).
+- Bad rows go to a quarantine table with a reason, instead of being dropped.
+- Dedupe keeps the first arrival, so lineage can point at a copy.
+
+## 9. Gold design (dbt)
+- Star schema: fct_events (incremental, merge on event_id), dim_actor, dim_repo, fct_repo_daily (aggregated).
+- Incremental filter uses ingested_at, not event time, because backfilled files arrive late.
+- payload stays out of gold. Names use max_by on latest event, since repos get renamed.
+- Custom test: fct_events row count must equal silver. It passed after the late-arriving backfill.
+
+## 10. Incident: silent skips in the backfill
+- Transient "connection reset" errors from the source were treated as "file not available", and one failure ended the whole run.
+- Fix: retries, 404 vs other failures handled separately, per-file error handling, a summary line, and a 24-hour look-back on the hourly job.
+- Result: uploaded=28 skipped=180 not_in_archive=8 (hours not yet published) failed=0.
+
+## 11. Missing-hours check
+- Checks every day that has data for 24 hours, ignoring the newest 7. It cannot see days with no files at all.
+- Some gaps may be upstream (404). The pipeline records them instead of failing.
+
+## 12. Drill: bad rows and schema drift
+- Uploaded a file with an unexpected extra field, a row missing id, and a non-JSON line.
+- Result: extra field ignored, the other two went to quarantine as missing_id and invalid_json, and the pipeline kept running.
+
+## 13. Measured numbers
+- One day: about 4.0M rows, 1.76 GB raw, bronze ingest about 54 seconds.
+- Total: about 53M rows. Silver: 483 files, 20.7 GB before clustering.
+- dbt build: about 100 to 117 seconds per run, incremental or not (full-rebuild tables and tests dominate).
+- Clustering: TODO before/after query time, bytes read, file count.
+
+## 14. What breaks at 10x
+- TODO: your own list (MERGE lookup cost on silver, full rebuild of dims/marts, tests scanning full tables, serverless daily quota).
+EOF
