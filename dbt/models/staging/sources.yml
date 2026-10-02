@@ -1,0 +1,10 @@
+version: 2
+sources:
+  - name: silver
+    database: workspace
+    schema: gh_archive
+    tables:
+      - name: silver_events
+        columns:
+          - name: event_id
+            data_tests: [unique, not_null]

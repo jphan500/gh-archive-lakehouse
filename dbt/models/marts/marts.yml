@@ -1,0 +1,26 @@
+version: 2
+models:
+  - name: fct_events
+    description: One row per GitHub event, deduplicated upstream in silver.
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: repo_id
+        data_tests:
+          - relationships:
+              to: ref('dim_repo')
+              field: repo_id
+              config:
+                where: "repo_id is not null"
+  - name: dim_actor
+    description: One row per user, with latest login and activity span.
+    columns:
+      - name: actor_id
+        data_tests: [unique, not_null]
+  - name: dim_repo
+    description: One row per repository, with latest name and activity span.
+    columns:
+      - name: repo_id
+        data_tests: [unique, not_null]
+  - name: fct_repo_daily
+    description: Daily activity counts per repository.
