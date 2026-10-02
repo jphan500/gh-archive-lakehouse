@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Runs on a Linux GitHub runner. Fetches recent hourly files not yet in the volume.
-set -euo pipefail
+# Runs on a Linux GitHub runner. Fetches the last 24 hours of files not yet in the volume.
+set -uo pipefail
 VOL="dbfs:/Volumes/workspace/gh_archive/raw"
 TMP=$(mktemp -d)
 existing=$(databricks fs ls "$VOL")
-for back in 6 5 4 3 2; do
-  ts=$(date -u -d "$back hours ago" +%Y-%m-%d-%-H)
-  f="$ts.json.gz"
-  if echo "$existing" | grep -qF "$f"; then echo "skip $f (already there)"; continue; fi
-  if ! curl -fsS -o "$TMP/$f" "https://data.gharchive.org/$f"; then echo "not available yet: $f"; continue; fi
-  gzip -t "$TMP/$f"
-  databricks fs cp "$TMP/$f" "$VOL/$f"
-  rm "$TMP/$f"
-  echo "uploaded $f"
+failed=0
+for back in $(seq 24 -1 2); do
+  f="$(date -u -d "$back hours ago" +%Y-%m-%d-%-H).json.gz"
+  if grep -qF "$f" <<< "$existing"; then continue; fi
+  code=$(curl -sS --retry 3 --retry-delay 5 -o "$TMP/$f" -w "%{http_code}" "https://data.gharchive.org/$f" || true)
+  if [[ "$code" == "404" ]]; then echo "not in archive yet (404): $f"; rm -f "$TMP/$f"; continue; fi
+  if [[ "$code" != "200" ]]; then echo "download failed ($code): $f"; failed=$((failed+1)); rm -f "$TMP/$f"; continue; fi
+  if ! gzip -t "$TMP/$f"; then echo "corrupt download: $f"; failed=$((failed+1)); rm -f "$TMP/$f"; continue; fi
+  if databricks fs cp "$TMP/$f" "$VOL/$f" --overwrite; then echo "uploaded $f"; else echo "upload failed: $f"; failed=$((failed+1)); fi
+  rm -f "$TMP/$f"
 done
+if [[ $failed -gt 0 ]]; then exit 1; fi
