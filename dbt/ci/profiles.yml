@@ -1,0 +1,11 @@
+gh_archive:
+  target: ci
+  outputs:
+    ci:
+      type: databricks
+      catalog: workspace
+      schema: gold
+      host: "{{ env_var('DBT_HOST') }}"
+      http_path: "{{ env_var('DBT_HTTP_PATH') }}"
+      token: "{{ env_var('DBT_TOKEN') }}"
+      threads: 4
