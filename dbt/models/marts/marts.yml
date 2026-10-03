@@ -25,3 +25,8 @@ models:
         data_tests: [unique, not_null]
   - name: fct_repo_daily
     description: Daily activity counts per repository.
+  - name: mart_daily_activity
+    description: Daily platform activity KPIs. Filter to hours_covered = 24 for complete days.
+    columns:
+      - name: event_date
+        data_tests: [unique, not_null]
