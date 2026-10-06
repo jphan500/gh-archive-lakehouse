@@ -21,18 +21,21 @@ flowchart LR
 ```
 
 ## Tour
-1. **Ingestion:** a scheduled GitHub Actions run uploading hourly files (docs/actions-run.png)  
-![caption](docs/file.png)
-2. **Pipeline:** the Databricks job running bronze then silver (docs/job-run.png)  
-![caption](docs/file.png)
-3. **Data quality:** quarantined rows from the bad-rows drill (docs/quarantine.png)  
-![caption](docs/file.png)
-4. **Modeling:** the dbt lineage graph (docs/lineage.png)  
-![caption](docs/file.png)
+1. **Ingestion:** a scheduled GitHub Actions run uploading hourly files 
+![Ingestion Actions Run](docs/actions-run.png)
+
+2. **Pipeline:** the Databricks job running bronze then silver
+![Databricks Job Run](docs/job-run.png)
+
+3. **Data quality:** quarantined rows from the bad-rows drill 
+![Data Quality Quarantine](docs/quarantine.png)
+
+4. **Modeling:** the dbt lineage graph 
+![dbt Lineage Graph](docs/lineage.png)
+
 5. **Output:** the dashboard  
-(docs/daily_averages_dashboard.png)
-(docs/event_mix_dashboard.png)  
-![caption](docs/file.png)
+![Daily Averages Dashboard](docs/daily_averages_dashboard.png)
+![Event Mix Dashboard](docs/event_mix_dashboard.png)
 
 
 ## Stack
@@ -53,7 +56,6 @@ Databricks Free Edition (serverless), Delta, Unity Catalog, Auto Loader, dbt-dat
 - dbt: models and tests build in about 2 minutes; fct_events is incremental
 - Analysis: Activity from the period of Sep 28 - Oct 4 between 2024 and 2026 has steadily decreased. Average number of pull requests opened went down from 18,6249 in 2024, to 16,7806 in 2025 to 29,555 in 2026. Events per user decreased from 7.3 in 2024, to 6.3 to 2025 to 4.5 in 2026. The biggest decrease in user activity seems to be from 2025 to 2026.
 
-![Dashboard](docs/dashboard.png)
 
 ## Data quality and failure handling  
 - Every download is checked with gzip -t before upload, so corrupt files never reach the volume.
