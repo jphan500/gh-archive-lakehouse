@@ -40,10 +40,7 @@ Short record of what I chose, what I rejected, and why.
 - Rejected: silently skipping corrupt files, because data loss goes unnoticed.
 
 ## 7. Measured numbers
-- TODO: size of one hourly file, upload time per day, rows per day, bronze ingest runtime, total after backfill.
-
-cd ~/gh-archive-lakehouse
-cat >> DECISIONS.md << 'EOF'
+Each hourly file is about 70 - 80mb, takes about 3 minutes per 24 hourly files, 1 to 5 million records per day.
 
 ## 8. Silver design
 - Parse with try_parse_json (VARIANT) and try_ casts, so schema drift and bad rows can't crash the stream.
@@ -74,8 +71,3 @@ cat >> DECISIONS.md << 'EOF'
 - One day: about 4.0M rows, 1.76 GB raw, bronze ingest about 54 seconds.
 - Total: about 53M rows. Silver: 483 files, 20.7 GB before clustering.
 - dbt build: about 100 to 117 seconds per run, incremental or not (full-rebuild tables and tests dominate).
-- Clustering: TODO before/after query time, bytes read, file count.
-
-## 14. What breaks at 10x
-- TODO: your own list (MERGE lookup cost on silver, full rebuild of dims/marts, tests scanning full tables, serverless daily quota).
-EOF
