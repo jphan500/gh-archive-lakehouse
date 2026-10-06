@@ -90,7 +90,7 @@ Databricks Free Edition (serverless), Delta, Unity Catalog, Auto Loader, dbt-dat
 ## Links
 - dbt docs and lineage: TODO your GitHub Pages URL
 - Decisions log: [DECISIONS.md](DECISIONS.md)
-- Walkthrough video: TODO
+
 
 ## How I built it
 I designed the architecture and made the decisions, and used AI assistance for boilerplate and debugging.
