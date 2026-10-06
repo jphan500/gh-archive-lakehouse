@@ -26,6 +26,7 @@ flowchart LR
 
 2. **Pipeline:** the Databricks job running bronze then silver
 ![Databricks Job Run](docs/job-run.png)
+![Databricks Bronze and Silver Run](docs/databricks_bronze_silver_run.png)
 
 3. **Data quality:** quarantined rows from the bad-rows drill 
 ![Data Quality Quarantine](docs/quarantine.png)
