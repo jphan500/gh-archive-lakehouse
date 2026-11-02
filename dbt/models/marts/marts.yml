@@ -14,19 +14,75 @@ models:
               config:
                 where: "repo_id is not null"
   - name: dim_actor
-    description: One row per user, with latest login and activity span.
+    description: One row per GitHub user or bot seen in the data, with first and last activity and total events.
     columns:
       - name: actor_id
         data_tests: [unique, not_null]
+        description: "GitHub user ID."
+      - name: actor_login
+        description: "GitHub username. Bot accounts typically end in [bot]."
+      - name: first_seen_at
+        description: "Timestamp of the earliest event seen for the actor in the loaded data."
+      - name: last_seen_at
+        description: "Timestamp of the latest event seen for the actor in the loaded data."
+      - name: event_count
+        description: "Total events for the actor across all loaded data."
   - name: dim_repo
-    description: One row per repository, with latest name and activity span.
+    description: One row per repository, with latest name and activity span and total events
     columns:
       - name: repo_id
         data_tests: [unique, not_null]
+        description: "GitHub repository ID."
+      - name: repo_name
+        description: "Repository name in owner/name format."
+      - name: first_seen_at
+        description: "Timestamp of the earliest event seen for the repo in the loaded data."
+      - name: last_seen_at
+        description: "Timestamp of the latest event seen for the repo in the loaded data."
+      - name: event_count
+        description: "Total events for the repo across all loaded data."
   - name: fct_repo_daily
-    description: Daily activity counts per repository.
-  - name: mart_daily_activity
-    description: Daily platform activity KPIs. Filter to hours_covered = 24 for complete days.
+    description: Daily activity counts per repository. One row per repo per day. Use for top-repo rankings and repo-level trends.
     columns:
       - name: event_date
+        description: "Calendar date (UTC) of the events."
+      - name: repo_id
+        description: "GitHub repository ID. Joins to dim_repo.repo_id."
+      - name: repo_name
+        description: "Repository name in owner/name format."
+      - name: events
+        description: "Total events for the repo that day."
+      - name: unique_actors
+        description: "Distinct users or bots active in the repo that day."
+      - name: stars
+        description: "Star events for the repo that day."
+      - name: forks
+        description: "Fork events for the repo that day."
+      - name: pushes
+        description: "Push events for the repo that day."
+      - name: prs_opened
+        description: "Pull requests opened in the repo that day."
+      - name: issues_opened
+        description: "Issues opened in the repo that day."
+  - name: mart_daily_activity
+    description: Daily platform activity KPIs. Filter to hours_covered = 24 for complete days. One row per day of GitHub activity across all repos. Use for platform-wide daily totals and trends.
+    columns:
+      - name: event_date
+        description: "Calendar date (UTC) of the events."
         data_tests: [unique, not_null]
+      - name: events
+        description: "Total GitHub events that day."
+      - name: active_actors
+        description: "Distinct users or bots that generated at least one event that day."
+      - name: active_repos
+        description: "Distinct repositories with at least one event that day."
+      - name: stars
+        description: "Number of star events (repo starred) that day."
+      - name: forks
+        description: "Number of fork events that day."
+      - name: pushes
+        description: "Number of push events that day."
+      - name: prs_opened
+        description: "Number of pull requests opened that day."
+      - name: hours_covered
+        description: "Number of hours of that day present in the data (max 24). Less than 24 means the day is partial."
