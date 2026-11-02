@@ -6,6 +6,9 @@ model-paths: ["models"]
 test-paths: ["tests"]
 models:
   gh_archive:
+    +persist_docs:
+      relation: true
+      columns: true
     staging:
       +materialized: view
     marts:
