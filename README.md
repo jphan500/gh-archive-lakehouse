@@ -9,15 +9,17 @@ https://www.gharchive.org/
 https://jphan500.github.io/gh-archive-lakehouse/#!/overview
 
 ## Architecture
-
 ```mermaid
 flowchart LR
-  A["GH Archive hourly files"] -->|"GitHub Actions: download, gzip check, upload"| B[("Volume: raw")]
-  B -->|"Auto Loader"| C["bronze_events"]
-  C -->|"parse, dedupe"| D["silver_events"]
-  C -->|"bad rows"| Q["silver_quarantine"]
-  D -->|"dbt"| E["gold: fct_events, dims, marts"]
-  E --> F["Dashboard"]
+    A[ GH Archive hourly files ] -->| GitHub Actions: download, gzip check, upload | B[( Volume: raw )]
+    B -->| Auto Loader | C[ bronze_events ]
+    C -->| parse, dedupe | D[ silver_events ]
+    C -->| bad rows | Q[ silver_quarantine ]
+    D -->| dbt | E[ gold: fct_events, dims, marts ]
+    
+    %% Parallel consumers pulling from E (Gold)
+    E -->| documented via dbt persist_docs | G[ Genie space ]
+    E -->| BI reporting | F[ Dashboard ]
 ```
 
 ## Tour
@@ -38,9 +40,11 @@ flowchart LR
 ![Daily Averages Dashboard](docs/daily_averages_dashboard.png)
 ![Event Mix Dashboard](docs/event_mix_dashboard.png)
 
+6. **Natural-language access:** a Genie space on the gold tables, with a test log in [docs/genie](docs/genie/README.md)
+![Genie Space](docs/genie_answer.png)
 
 ## Stack
-Databricks Free Edition (serverless), Delta, Unity Catalog, Auto Loader, dbt-databricks, GitHub Actions.
+Databricks Free Edition (serverless), Delta, Unity Catalog, Auto Loader, dbt-databricks, AI/BI Genie, GitHub Actions.
 
 ## Layers
 | Layer | What it holds |
@@ -55,7 +59,7 @@ Databricks Free Edition (serverless), Delta, Unity Catalog, Auto Loader, dbt-dat
 - Reliability: 0 missing hours across loaded days; 0 hours were not yet published upstream when I checked
 - Duplicates: 954 duplicate events dropped in silver; 0 rows quarantined
 - dbt: models and tests build in about 2 minutes; fct_events is incremental
-- Analysis: Activity from the period of Sep 28 - Oct 4 between 2024 and 2026 has steadily decreased. Average number of pull requests opened went down from 18,6249 in 2024, to 16,7806 in 2025 to 29,555 in 2026. Events per user decreased from 7.3 in 2024, to 6.3 to 2025 to 4.5 in 2026. The biggest decrease in user activity seems to be from 2025 to 2026.
+- Analysis: Activity from the period of Sep 28 - Oct 4 between 2024 and 2026 has steadily decreased. Average number of pull requests opened went down from 186,249 in 2024, to 167,806 in 2025 to 29,555 in 2026. Events per user decreased from 7.3 in 2024, to 6.3 to 2025 to 4.5 in 2026. The biggest decrease in user activity seems to be from 2025 to 2026.
 
 
 ## Data quality and failure handling  
