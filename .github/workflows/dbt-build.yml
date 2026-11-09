@@ -34,7 +34,7 @@ jobs:
         working-directory: dbt
         run: dbt docs generate --static --profiles-dir ci
       - run: mkdir site && cp dbt/target/static_index.html site/index.html
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: site
       - id: deploy
